@@ -1,0 +1,17 @@
+{
+  "name": "dr02-map-validation",
+  "version": "1.0.0",
+  "description": "Validação de CSVs para o mapa DR-02",
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validar-csv.js",
+    "convert-excel": "node scripts/convert_excel.js"
+  },
+  "dependencies": {
+    "csv-parse": "^5.5.2",
+    "xlsx": "^0.18.5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

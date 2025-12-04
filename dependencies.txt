@@ -1,0 +1,3 @@
+# npm dependencies (install Node.js to use)
+# Run: npm install
+csv-parse@5.5.2
