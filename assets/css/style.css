@@ -1,114 +1,627 @@
-/* Reset básico --------------------------------------------------- */
-* { box-sizing: border-box; margin:0; padding:0; }
-body { font-family: Arial, sans-serif; }
-h1   { background:#2c3e50; color:#fff; padding:.6rem 1rem;
-       font-size:1.2rem; }
+/* =================================================================
+   RESPONSIVE DESIGN - MOBILE-FIRST APPROACH
+   Camadas: Mobile (base) → Tablet (768px+) → Desktop (1024px+)
+   ================================================================= */
 
-/* Layout flex: sidebar + mapa ----------------------------------- */
-#container { display:flex; height:calc(100vh - 52px); }
-
-#sidebar{
-  width:280px; min-width:240px; max-width:320px;
-  background:#f8f9fa; border-right:1px solid #ccc;
-  padding:0.5rem 0.75rem; overflow-y:auto;
-}
-#sidebar h2{ font-size:1rem; margin-bottom:.5rem; }
-
-#sidebar fieldset{
-  border:1px solid #ccc; margin-bottom:.75rem; padding:.4rem .5rem;
-}
-#sidebar legend{ font-weight:600; padding:0 .2rem; }
-#sidebar label{ display:block; font-size:.85rem; margin:2px 0; }
-
-#road-search{
-  width:100%; margin-bottom:.4rem; padding:.25rem .4rem;
-  border:1px solid #aaa; border-radius:4px;
-  font-size:.85rem;
+/* ═══════════════════════════════════════════════════════════════════
+   RESET E CONFIGURAÇÃO BASE
+   ═══════════════════════════════════════════════════════════════════ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
 }
 
-#map{ flex:1; }  /* ocupa todo o resto */
-
-/* Mobile: sidebar vira topo ------------------------------------- */
-@media (max-width:600px){
-  #container{ flex-direction:column; }
-  #sidebar{ width:100%; max-height:45vh; border-right:none; border-bottom:1px solid #ccc; }
-  #map{ height:55vh; flex:none; }
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+  background: #f8f9fa;
+  overflow: hidden;
+}
+
+/* Melhor legibilidade em dispositivos móveis */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MAPA (ELEMENTO PRINCIPAL)
+   ═══════════════════════════════════════════════════════════════════ */
+#map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FILTRO DE RODOVIA - MOBILE FIRST
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* MOBILE (base) */
+.rodovia-filter {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 14000;
+  background: rgba(255, 255, 255, 0.97);
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  font-family: inherit;
+  font-size: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  touch-action: manipulation;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.filter-label {
+  display: block;
+  font-weight: 600;
+  color: #0d47a1;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 12px 10px;
+  border: 2px solid #e0e7f1;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #0d47a1;
+  font-size: 15px;
+  font-weight: 500;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230d47a1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 20px;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #0d47a1;
+  box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
+}
+
+.filter-button {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d0d8e0;
+  border-radius: 8px;
+  background-color: #f1f5f9;
+  color: #0d47a1;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.filter-button:active,
+.filter-button:hover {
+  background-color: #e0e8f0;
+  border-color: #0d47a1;
+}
+
+/* TABLET (768px+) */
+@media (min-width: 768px) {
+  .rodovia-filter {
+    top: 14px;
+    left: 14px;
+    right: auto;
+    width: auto;
+    min-width: 360px;
+    max-width: 420px;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 12px;
+  }
+
+  .filter-label {
+    margin-bottom: 0;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .filter-select {
+    flex: 1;
+    min-width: 180px;
+    padding: 8px 32px 8px 10px;
+    font-size: 14px;
+  }
+
+  .filter-button {
+    width: auto;
+    padding: 8px 12px;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+}
+
+/* DESKTOP (1024px+) */
+@media (min-width: 1024px) {
+  .rodovia-filter {
+    min-width: 420px;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+
+  .filter-label {
+    font-size: 13px;
+  }
+
+  .filter-select {
+    font-size: 14px;
+  }
+
+  .filter-button {
+    padding: 8px 14px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CARDS DE INFORMAÇÃO (Metadados + Planilha)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* MOBILE (base) */
+.info-card {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  z-index: 14000;
+  background: rgba(255, 255, 255, 0.98);
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  font-family: inherit;
+  max-height: 45vh;
+  overflow-y: auto;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: block !important;
+}
+
+.metadata-card {
+  bottom: 70px;
+}
+
+.data-panel {
+  bottom: 12px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e7f1;
+}
+
+.card-title {
+  font-size: 15px;
+  color: #0d47a1;
+  font-weight: 700;
+}
+
+.card-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.card-close:active,
+.card-close:hover {
+  background-color: #f1f5f9;
+  color: #0d47a1;
+}
+
+.card-content {
+  font-size: 14px;
+}
+
+/* Grid de KM (Km Inicial + Km Final) */
+.km-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.km-box {
+  background: #f5f7fa;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #0d47a1;
+}
+
+.km-box.km-final {
+  border-left-color: #ff5722;
+}
+
+.km-label {
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.km-value {
+  color: #0d47a1;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.km-box.km-final .km-value {
+  color: #ff5722;
+}
+
+/* Coordenadas */
+.coords-box {
+  background: #f0f7ff;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #0d47a1;
+  margin-bottom: 10px;
+}
+
+.coords-box.coords-final {
+  background: #fff5f0;
+  border-left-color: #ff5722;
+}
+
+.coords-label {
+  color: #666;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.coords-value {
+  color: #0d47a1;
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.coords-box.coords-final .coords-value {
+  color: #ff5722;
+}
+
+/* TABLET (768px+) */
+@media (min-width: 768px) {
+  .info-card {
+    left: 14px;
+    right: auto;
+    width: 380px;
+    max-height: 65vh;
+    padding: 14px;
+  }
+
+  .metadata-card {
+    bottom: 14px;
+    right: 14px;
+    left: auto;
+  }
+
+  .data-panel {
+    bottom: 14px;
+    left: 14px;
+  }
+
+  .km-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .card-title {
+    font-size: 14px;
+  }
+
+  .card-content {
+    font-size: 13px;
+  }
+}
+
+/* DESKTOP (1024px+) */
+@media (min-width: 1024px) {
+  .info-card {
+    width: 420px;
+    max-height: 70vh;
+  }
+
+  .km-grid {
+    gap: 12px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TABELA (Planilha XLSX)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.table-container {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(45vh - 60px);
+  -webkit-overflow-scrolling: touch;
+}
+
+.loading-text {
+  color: #666;
+  font-size: 14px;
+  padding: 20px;
+  text-align: center;
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: white;
+}
+
+.table-container th {
+  background-color: #f0f7ff;
+  color: #0d47a1;
+  padding: 10px 8px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #0d47a1;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table-container td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e0e7f1;
+  word-break: break-word;
+}
+
+.table-container tbody tr:hover {
+  background-color: #f9fbff;
+}
+
+.table-container tbody tr:active {
+  background-color: #e8f1ff;
+}
+
+/* TABLET (768px+) */
+@media (min-width: 768px) {
+  .table-container {
+    max-height: calc(65vh - 70px);
+  }
+
+  .table-container table {
+    font-size: 13px;
+  }
+
+  .table-container th {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+
+  .table-container td {
+    padding: 12px 10px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ESTILOS DE ACESSIBILIDADE E FOCO
+   ═══════════════════════════════════════════════════════════════════ */
+
+button:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(13, 71, 161, 0.5);
+  outline-offset: 2px;
+}
+
+/* Suporte para usuários que preferem movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Suporte para temas escuros (futuro) */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #1a1a1a;
+  }
+
+  .rodovia-filter,
+  .info-card {
+    background: rgba(40, 40, 40, 0.98);
+    color: #e0e0e0;
+  }
+
+  .filter-select,
+  .filter-button {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+
+  .card-title {
+    color: #fff;
+  }
+
+  .km-box,
+  .coords-box {
+    background: #2a2a2a;
+    color: #e0e0e0;
+  }
+
+  .table-container table {
+    background: #2a2a2a;
+  }
+
+  .table-container th {
+    background-color: #1a1a1a;
+    color: #90caf9;
+  }
+
+  .table-container tbody tr:hover {
+    background-color: #333;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SUPORTE A NOTCH (SAFE AREA INSETS)
+   ═══════════════════════════════════════════════════════════════════ */
+
+@supports (padding: max(0px)) {
+  .rodovia-filter {
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+  }
+
+  .info-card {
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   UTILITÁRIOS ANTIGOS (compatibilidade com script existente)
+   ═══════════════════════════════════════════════════════════════════ */
 
 .rod-label {
   background: #fff;
   padding: 2px 6px;
   border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   font-weight: bold;
   border: 1px solid #bbb;
   color: #222;
-  font-size: 15px;
+  font-size: 13px;
   white-space: nowrap;
   pointer-events: none;
 }
 
-/* Regras responsivas adicionais para melhorar UX mobile */
-@media (max-width: 900px) {
-  /* Filtro fixo no topo, maior e fácil de tocar */
-  #rodovia-filter {
-    left: 8px !important;
-    right: 8px !important;
-    top: 8px !important;
-    width: auto !important;
-    min-width: unset !important;
-    padding: 10px !important;
-    display: flex !important;
-    gap: 8px;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-    border-radius: 10px;
-    font-size: 15px;
-    z-index: 14000;
-    max-width: calc(100% - 16px);
-    touch-action: manipulation;
-  }
-  #rodovia-filter label { display:block; width:100%; font-size:14px; margin-bottom:6px; }
-  #rodovia-filter select { min-width: 0; width: 100%; padding:10px; font-size:15px; }
-  #rodovia-filter button { padding:8px 10px; font-size:14px; }
-
-  /* Map ocupa a maior parte da tela (visual foco) */
-  #map { height: calc(100vh - 116px) !important; }
-
-  /* Painéis de informação (card + planilha) ficam mais largos e legíveis */
-  #rodovia-metadata-card {
-    left: 8px !important;
-    right: 8px !important;
-    bottom: 72px !important;
-    min-width: unset !important;
-    max-width: calc(100% - 16px) !important;
-    padding: 12px !important;
-    font-size: 14px;
-    z-index: 14000;
-  }
-
-  #malha-xlsx-panel {
-    left: 8px !important;
-    right: 8px !important;
-    bottom: 8px !important;
-    max-width: calc(100% - 16px) !important;
-    min-width: unset !important;
-    padding: 10px !important;
-    font-size: 14px;
-    z-index: 14000;
-    max-height: 36vh !important;
-  }
-
-  /* Tornar a tabela mais legível em mobile */
-  #malha-xlsx-table-container table { font-size: 13px; }
-  #malha-xlsx-table-container th, #malha-xlsx-table-container td { padding: 8px 6px; }
+#container {
+  display: flex;
+  height: calc(100vh - 52px);
 }
 
-/* Ajustes específicos para telefones bem pequenos */
-@media (max-width: 420px) {
-  #rodovia-filter { padding: 8px; font-size: 14px; }
-  #rodovia-filter select { font-size: 14px; padding: 8px; }
-  #rodovia-metadata-card, #malha-xlsx-panel { font-size: 13px; padding: 8px; }
-  #map { height: calc(100vh - 160px) !important; }
+#sidebar {
+  width: 280px;
+  min-width: 240px;
+  max-width: 320px;
+  background: #f8f9fa;
+  border-right: 1px solid #ccc;
+  padding: 0.5rem 0.75rem;
+  overflow-y: auto;
+}
+
+#sidebar h2 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+#sidebar fieldset {
+  border: 1px solid #ccc;
+  margin-bottom: 0.75rem;
+  padding: 0.4rem 0.5rem;
+}
+
+#sidebar legend {
+  font-weight: 600;
+  padding: 0 0.2rem;
+}
+
+#sidebar label {
+  display: block;
+  font-size: 0.85rem;
+  margin: 2px 0;
+}
+
+#road-search {
+  width: 100%;
+  margin-bottom: 0.4rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+/* MOBILE */
+@media (max-width: 767px) {
+  #container {
+    flex-direction: column;
+  }
+
+  #sidebar {
+    width: 100%;
+    max-height: 45vh;
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+  }
+
+  #map {
+    height: 55vh;
+    flex: none;
+  }
+}
+
+/* TABLET+ */
+@media (min-width: 768px) {
+  #container {
+    flex-direction: row;
+  }
+
+  #sidebar {
+    max-height: 100vh;
+    border-right: 1px solid #ccc;
+    border-bottom: none;
+  }
+
+  #map {
+    flex: 1;
+  }
 }

@@ -1267,14 +1267,14 @@ async function carregarMalha() {
             createdLayer.on('click', function(e) {
               console.log('🖱️ Clique em rodovia:', nomeCompleto);
               // Encontra o nome original em metadadosRodovias
-              if (metadadosRodovias) {
-                const rodoviaChave = Object.keys(metadadosRodovias).find(r => 
-                  (r || '').toLowerCase().replace(/[^a-z0-9]/g, '') === nomeCompleto.toLowerCase().replace(/[^a-z0-9]/g, '')
-                );
-                if (rodoviaChave) {
-                  exibirMetadadosRodovia(rodoviaChave);
-                }
-              }
+              // if (metadadosRodovias) {
+              //   const rodoviaChave = Object.keys(metadadosRodovias).find(r => 
+              //     (r || '').toLowerCase().replace(/[^a-z0-9]/g, '') === nomeCompleto.toLowerCase().replace(/[^a-z0-9]/g, '')
+              //   );
+              //   if (rodoviaChave) {
+              //     exibirMetadadosRodovia(rodoviaChave);
+              //   }
+              // }
             });
             
             // indexa metadados para matching por filtros (normaliza o nome)
