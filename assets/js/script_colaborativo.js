@@ -438,7 +438,8 @@ async function carregarPlanilhaMalha() {
         Rodovia: String(row[0] || '').trim(),        // Coluna A
         km_inicial: String(row[1] || '').trim(),     // Coluna B
         km_final: String(row[2] || '').trim(),       // Coluna C
-        Municipio: String(row[3] || '').trim()       // Coluna D
+        Municipio: String(row[3] || '').trim(),      // Coluna D
+        Caracteristica: String(row[4] || '').trim()  // Coluna E
       }));
     // Detecta rodovia filtrada pelo select
     let rodoviaFiltrada = '';
@@ -470,18 +471,32 @@ async function carregarPlanilhaMalha() {
 
     let html = '<table style="width:100%; border-collapse:collapse; font-size:13px;">';
     html += '<thead><tr>' +
-      '<th style="text-align:left; padding:6px; border-bottom:1px solid #eee">Rodovia</th>' +
-      '<th style="padding:6px; border-bottom:1px solid #eee">Km Inicial</th>' +
-      '<th style="padding:6px; border-bottom:1px solid #eee">Km Final</th>' +
-      '<th style="padding:6px; border-bottom:1px solid #eee">Município</th>' +
+      '<th style="text-align:center; padding:6px; border-bottom:1px solid #eee; width:22%">Rodovia</th>' +
+      '<th style="text-align:center; padding:6px; border-bottom:1px solid #eee; width:14%">Km Inicial</th>' +
+      '<th style="text-align:center; padding:6px; border-bottom:1px solid #eee; width:14%">Km Final</th>' +
+      '<th style="text-align:center; padding:6px; border-bottom:1px solid #eee; width:30%">Município</th>' +
+      '<th style="text-align:center; padding:6px; border-bottom:1px solid #eee; width:20%">Característica da via</th>' +
       '</tr></thead><tbody>';
 
     rows.forEach(r => {
+      // KM INICIAL: se vazio, mostrar 0; sempre 3 casas decimais
+      let kmIni = r.km_inicial;
+      if (kmIni === '' || kmIni === null || kmIni === undefined) kmIni = 0;
+      kmIni = parseFloat(kmIni);
+      if (isNaN(kmIni)) kmIni = 0;
+      kmIni = kmIni.toFixed(3);
+      // KM FINAL: sempre 3 casas decimais
+      let kmFim = r.km_final;
+      if (kmFim === '' || kmFim === null || kmFim === undefined) kmFim = '';
+      kmFim = parseFloat(kmFim);
+      if (isNaN(kmFim)) kmFim = '';
+      else kmFim = kmFim.toFixed(3);
       html += '<tr>' +
-        `<td style="padding:6px; border-bottom:1px solid #fafafa">${(r.Rodovia || '')}</td>` +
-        `<td style="padding:6px; border-bottom:1px solid #fafafa">${(r.km_inicial || '')}</td>` +
-        `<td style="padding:6px; border-bottom:1px solid #fafafa">${(r.km_final || '')}</td>` +
-        `<td style="padding:6px; border-bottom:1px solid #fafafa">${(r.Municipio || '')}</td>` +
+        `<td style="text-align:center; padding:6px; border-bottom:1px solid #fafafa; width:22%">${(r.Rodovia || '')}</td>` +
+        `<td style="text-align:center; padding:6px; border-bottom:1px solid #fafafa; width:14%">${kmIni}</td>` +
+        `<td style="text-align:center; padding:6px; border-bottom:1px solid #fafafa; width:14%">${kmFim}</td>` +
+        `<td style="text-align:center; padding:6px; border-bottom:1px solid #fafafa; width:30%">${(r.Municipio || '')}</td>` +
+        `<td style="text-align:center; padding:6px; border-bottom:1px solid #fafafa; width:20%">${(r.Caracteristica || '')}</td>` +
         '</tr>';
     });
     html += '</tbody></table>';
@@ -629,9 +644,9 @@ async function carregarTodosDados() {
     } else if (error.message.includes('HTTP 500')) {
       mensagem = "⚠️ Servidor temporariamente indisponível. Tente novamente em alguns segundos.";
     } else if (error.message.includes('HTTP')) {
-      mensagem = `📡 Erro no servidor: ${error.message}`;
+      mensagem = "";
     }
-    mostrarNotificacao(mensagem, "error");
+    if (mensagem) mostrarNotificacao(mensagem, "error");
   }
 }
 
@@ -669,7 +684,7 @@ function renderizarLinhasPorTrecho(dadosFiltrados = null) {
         if (!layer || !layer.setStyle) return;
         if (activeRodovias.size === 0) {
           // restaura estilo padrão
-          const def = rodLayerDefaults[key] || { color: '#000000ff', weight: 3, opacity: 0.9 };
+          const def = rodLayerDefaults[key] || { color: '#ffffffff', weight: 3, opacity: 0.9 };
           try { layer.setStyle(def); } catch(e){}
         } else {
           if (Array.from(activeRodovias).some(ar => normKey.includes(ar) || ar.includes(normKey))) {
@@ -1042,7 +1057,7 @@ function mostrarNotificacao(mensagem, tipo = 'info') {
   div.className = `notificacao notificacao-${tipo}`;
   div.innerHTML = `
     <span>${mensagem}</span>
-    <button onclick="this.parentElement.remove()">×</button>
+    <!-- botão de fechar removido -->
   `;
   
   // Adiciona estilos se não existirem
@@ -1215,7 +1230,8 @@ async function carregarMalha() {
   const MALHA_PATH = "assets/data/malha_dr02.kmz";
   try {
     if (typeof JSZip !== 'undefined' && typeof toGeoJSON !== 'undefined') {
-      const resp = await fetch(MALHA_PATH);
+      // Adiciona timestamp para evitar cache
+      const resp = await fetch(MALHA_PATH + '?t=' + new Date().getTime());
       if (!resp.ok) throw new Error(`404 – não achei ${MALHA_PATH}`);
 
       const zip = await JSZip.loadAsync(await resp.arrayBuffer());
@@ -1266,15 +1282,26 @@ async function carregarMalha() {
             // Adiciona handler de clique para exibir metadados
             createdLayer.on('click', function(e) {
               console.log('🖱️ Clique em rodovia:', nomeCompleto);
-              // Encontra o nome original em metadadosRodovias
-              // if (metadadosRodovias) {
-              //   const rodoviaChave = Object.keys(metadadosRodovias).find(r => 
-              //     (r || '').toLowerCase().replace(/[^a-z0-9]/g, '') === nomeCompleto.toLowerCase().replace(/[^a-z0-9]/g, '')
-              //   );
-              //   if (rodoviaChave) {
-              //     exibirMetadadosRodovia(rodoviaChave);
-              //   }
-              // }
+              // Normaliza nome para valor do select
+              const norm = (s) => {
+                if (!s && s !== 0) return '';
+                try { return String(s).normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+                catch (e) { return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+              };
+              const key = norm(nomeCompleto);
+              // Seleciona no filtro
+              const sel = document.getElementById('select-rodovia');
+              if (sel) {
+                // Procura a opção correspondente
+                for (let i = 0; i < sel.options.length; i++) {
+                  if (sel.options[i].value === key) {
+                    sel.selectedIndex = i;
+                    // Dispara evento de change para acionar filtro
+                    sel.dispatchEvent(new Event('change'));
+                    break;
+                  }
+                }
+              }
             });
             
             // indexa metadados para matching por filtros (normaliza o nome)
@@ -1444,7 +1471,7 @@ function createRodoviaFilterUI() {
               targetRodoviaOriginal = Object.keys(metadadosRodovias).find(r => 
                 (r || '').toLowerCase().replace(/[^a-z0-9]/g, '') === kNorm
               );
-              console.log(`🔍 Encontrado nome em metadadosRodovias: "${targetRodoviaOriginal}" para layer "${k}"`);
+                           console.log(`🔍 Encontrado nome em metadadosRodovias: "${targetRodoviaOriginal}" para layer "${k}"`);
             }
             
             layer.setStyle({ color: '#ff5722', weight: 4, opacity: 1.0 });

@@ -76,7 +76,7 @@ body {
 .filter-label {
   display: block;
   font-weight: 600;
-  color: #0d47a1;
+  color: #fff;
   font-size: 14px;
   margin-bottom: 4px;
 }
@@ -231,25 +231,32 @@ body {
 .card-close {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 28px;
   cursor: pointer;
-  color: #999;
-  padding: 0;
+  color: #2563EB;
+  padding: 4px;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   transition: all 0.2s ease;
   touch-action: manipulation;
+  box-shadow: 0 1px 4px rgba(37,99,235,0.08);
 }
 
 .card-close:active,
 .card-close:hover {
-  background-color: #f1f5f9;
-  color: #0d47a1;
+  background-color: #F3F4F6;
+  color: #1D4ED8;
+  outline: 2px solid #2563EB;
+}
+
+.card-close:focus {
+  outline: 2px solid #2563EB;
+  background-color: #F3F4F6;
 }
 
 .card-content {
@@ -624,4 +631,14 @@ select:focus-visible {
   #map {
     flex: 1;
   }
+}
+
+.info-card.data-panel {
+  font-size: 12px;
+}
+
+.table-container,
+.table-container th,
+.table-container td {
+  font-size: 11px !important;
 }

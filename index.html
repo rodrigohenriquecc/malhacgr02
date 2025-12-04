@@ -58,7 +58,9 @@
   <div id="malha-xlsx-panel" class="info-card data-panel" role="region" aria-label="Dados da planilha MALHA">
     <div class="card-header">
       <strong class="card-title">Malha (MALHA CGR02SAC.xlsx)</strong>
-      <button class="card-close" aria-label="Fechar painel" onclick="this.closest('.info-card').style.display='none';">&times;</button>
+      <button id="btn-toggle-malha-panel" class="card-toggle" aria-label="Retrair painel" title="Retrair/Expandir painel">
+        <span id="icon-toggle-malha">&#9660;</span>
+      </button>
     </div>
     <div id="malha-xlsx-table-container" class="table-container">
       <div class="loading-text">Carregando planilha...</div>
@@ -67,5 +69,29 @@
   
   <!-- Mapa principal -->
   <div id="map" role="region" aria-label="Mapa interativo"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var btnToggle = document.getElementById('btn-toggle-malha-panel');
+      var panel = document.getElementById('malha-xlsx-panel');
+      var tableContainer = document.getElementById('malha-xlsx-table-container');
+      var iconToggle = document.getElementById('icon-toggle-malha');
+      var isRetracted = false;
+      if (btnToggle && panel && tableContainer && iconToggle) {
+        btnToggle.addEventListener('click', function() {
+          isRetracted = !isRetracted;
+          if (isRetracted) {
+            tableContainer.style.display = 'none';
+            iconToggle.innerHTML = '&#9654;'; // seta para direita
+            btnToggle.setAttribute('aria-label', 'Expandir painel');
+          } else {
+            tableContainer.style.display = '';
+            iconToggle.innerHTML = '&#9660;'; // seta para baixo
+            btnToggle.setAttribute('aria-label', 'Retrair painel');
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>
