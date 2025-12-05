@@ -76,7 +76,13 @@
       var panel = document.getElementById('malha-xlsx-panel');
       var tableContainer = document.getElementById('malha-xlsx-table-container');
       var iconToggle = document.getElementById('icon-toggle-malha');
-      var isRetracted = false;
+      var isRetracted = true;
+      // Retrai o painel ao carregar
+      if (tableContainer && iconToggle) {
+        tableContainer.style.display = 'none';
+        iconToggle.innerHTML = '&#9654;'; // seta para direita
+        if (btnToggle) btnToggle.setAttribute('aria-label', 'Expandir painel');
+      }
       if (btnToggle && panel && tableContainer && iconToggle) {
         btnToggle.addEventListener('click', function() {
           isRetracted = !isRetracted;
@@ -88,6 +94,21 @@
             tableContainer.style.display = '';
             iconToggle.innerHTML = '&#9660;'; // seta para baixo
             btnToggle.setAttribute('aria-label', 'Retrair painel');
+          }
+        });
+      }
+
+      // Expande painel automaticamente ao selecionar uma rodovia
+      var selRodovia = document.getElementById('select-rodovia');
+      if (selRodovia) {
+        selRodovia.addEventListener('change', function() {
+          if (selRodovia.value && selRodovia.value !== '') {
+            isRetracted = false;
+            if (tableContainer && iconToggle && btnToggle) {
+              tableContainer.style.display = '';
+              iconToggle.innerHTML = '&#9660;';
+              btnToggle.setAttribute('aria-label', 'Retrair painel');
+            }
           }
         });
       }

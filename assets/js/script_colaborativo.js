@@ -23,6 +23,10 @@ const layers = {
   linhas: L.layerGroup([], { pane: "rodoviasPane" }).addTo(mapa)
 };
 
+// Layer para pontos geolocalizados
+const pontosLayer = L.layerGroup([], { pane: "markerPane" }).addTo(mapa);
+window.pontosLayer = pontosLayer;
+
 // ═══════════════════════ 2.1) Dados km a km da malha oficial
 let pontosMalhaOficial = [];
 let indexMalhaOficial = {};
@@ -1230,8 +1234,8 @@ async function carregarMalha() {
   const MALHA_PATH = "assets/data/malha_dr02.kmz";
   try {
     if (typeof JSZip !== 'undefined' && typeof toGeoJSON !== 'undefined') {
-      // Adiciona timestamp para evitar cache
-      const resp = await fetch(MALHA_PATH + '?t=' + new Date().getTime());
+      // Adiciona timestamp para evitar cache sempre
+      const resp = await fetch(MALHA_PATH + '?v=' + Date.now());
       if (!resp.ok) throw new Error(`404 – não achei ${MALHA_PATH}`);
 
       const zip = await JSZip.loadAsync(await resp.arrayBuffer());
@@ -1525,6 +1529,8 @@ function inicializar() {
 
   // Carrega a planilha MALHA CGR02SAC.xlsx e popula o painel inferior esquerdo
   try { carregarPlanilhaMalha(); } catch(e){ console.debug('Erro ao iniciar carregamento da planilha MALHA', e); }
+  // Carrega e plota pontos geolocalizados
+  try { carregarPontosGeolocalizados(); } catch(e){ console.debug('Erro ao carregar pontos geolocalizados', e); }
   
   // Mostra notificação de boas-vindas
   mostrarNotificacao("🗺️ Sistema DR.02 carregado! Dados colaborativos atualizados.", "success");
@@ -1545,5 +1551,63 @@ if (typeof Papa !== 'undefined' && typeof L !== 'undefined') {
 // ═══════════════════════ 8) Exporta funções para uso global
 window.carregarTodosDados = carregarTodosDados;
 window.mostrarNotificacao = mostrarNotificacao;
+
+// Função para carregar e plotar pontos da planilha pontos_geolocalizados.xlsx
+async function carregarPontosGeolocalizados() {
+  if (typeof XLSX === 'undefined') {
+    console.warn('SheetJS (XLSX) não está disponível.');
+    return;
+  }
+  const PATH = 'assets/data/pontos_geolocalizados.xlsx';
+  try {
+    const resp = await fetch(PATH);
+    if (!resp.ok) {
+      console.warn('Arquivo não encontrado:', PATH);
+      return;
+    }
+    const ab = await resp.arrayBuffer();
+    const workbook = XLSX.read(ab, { type: 'array' });
+    // Usa a primeira aba
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+    pontosLayer.clearLayers();
+    const markers = [];
+    json.forEach(row => {
+      if (!row.GEO) return;
+      const partes = String(row.GEO).split(',');
+      if (partes.length !== 2) return;
+      const lat = parseFloat(partes[0]);
+      const lng = parseFloat(partes[1]);
+      if (isNaN(lat) || isNaN(lng)) return;
+      // Cria o marker e guarda para ajuste dinâmico
+      const marker = L.circleMarker([lat, lng], {
+        radius: 4,
+        color: '#1976d2', // borda azul
+        fillColor: '#fff', // fundo branco
+        fillOpacity: 1,
+        weight: 2,
+        pane: 'markerPane'
+      }).addTo(pontosLayer);
+      markers.push(marker);
+    });
+
+    // Função para ajustar o tamanho das bolinhas conforme o zoom
+    function ajustarTamanhoBolinhas() {
+      const zoom = mapa.getZoom();
+      let r = 4;
+      if (zoom <= 7) r = 2;
+      else if (zoom <= 9) r = 3;
+      else if (zoom >= 13) r = 6;
+      markers.forEach(m => m.setRadius(r));
+    }
+    mapa.on('zoomend', ajustarTamanhoBolinhas);
+    ajustarTamanhoBolinhas();
+    console.log(`✅ Pontos geolocalizados plotados: ${json.length}`);
+  } catch (e) {
+    console.error('Erro ao carregar pontos_geolocalizados.xlsx', e);
+  }
+}
+window.carregarPontosGeolocalizados = carregarPontosGeolocalizados;
 
 console.log("✅ Script DR.02 Sistema Colaborativo inicializado!");
